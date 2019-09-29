@@ -24,7 +24,7 @@ public class SupportRedisScannerRegistrar implements ImportBeanDefinitionRegistr
 
 
     public SupportRedisScannerRegistrar() {
-        logger.info("[suppot-jedis]:doScan");
+        logger.info("[suppot-ordies]:doScan");
     }
 
 
@@ -33,19 +33,17 @@ public class SupportRedisScannerRegistrar implements ImportBeanDefinitionRegistr
         SupportRedisScanner scanner = new SupportRedisScanner(registry);
 
         try {
-            if (this.resourceLoader != null) {
+            if (this.resourceLoader != null)
                 scanner.setResourceLoader(this.resourceLoader);
-            }
+
 
             List<String> packages = AutoConfigurationPackages.get(this.beanFactory);
-
-
             scanner.setAnnotationClass(Repository.class);
             scanner.registerFilters();
             scanner.doScan(StringUtils.toStringArray(packages));
 
         } catch (IllegalStateException ex) {
-            this.logger.error("Could not determine auto-configuration package, automatic mapper scanning disabled.");
+            this.logger.error("Could not determine auto-configuration package, automatic  scanning disabled.");
         }
 
     }

@@ -1,11 +1,10 @@
 package org.share.odies.annotation.support;
 
-import org.share.odies.Constants;
+import org.share.odies.api.OdiesRepository;
 import org.share.odies.core.JedisRepositoryContext;
 import org.share.odies.core.MapperFactoryBean;
 import org.share.odies.vo.RoEntityMeta;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -20,11 +19,8 @@ import java.util.Arrays;
 import java.util.Set;
 
 public class SupportRedisScanner extends ClassPathBeanDefinitionScanner {
+
     private Class<? extends Annotation> annotationClass;
-
-
-
-
     public SupportRedisScanner(BeanDefinitionRegistry registry) {
         super(registry, false);
     }
@@ -37,19 +33,18 @@ public class SupportRedisScanner extends ClassPathBeanDefinitionScanner {
     }
 
 
-    /**
-     * 已经过了 isCandidateComponent 逻辑了
-     * @param basePackages
-     * @return
-     */
+
     @Override
     public Set<BeanDefinitionHolder> doScan(String... basePackages) {
         Set<BeanDefinitionHolder> beanDefinitions = super.doScan(basePackages);
-        if (beanDefinitions.isEmpty()) {
-            this.logger.warn("No MyBatis mapper was found in '" + Arrays.toString(basePackages) + "' package. Please check your configuration.");
-        } else {
-            this.processBeanDefinitions(beanDefinitions);
-        }
+
+
+
+        if (beanDefinitions.isEmpty())
+            this.logger.warn("No Odies Ops was found in '" + Arrays.toString(basePackages) + "' package. Please check your configuration.");
+
+
+        this.processBeanDefinitions(beanDefinitions);
 
         return beanDefinitions;
     }
@@ -58,10 +53,12 @@ public class SupportRedisScanner extends ClassPathBeanDefinitionScanner {
     private void processBeanDefinitions(Set<BeanDefinitionHolder> beanDefinitions) {
 
         beanDefinitions.forEach(x->{
-
             GenericBeanDefinition definition = (GenericBeanDefinition)x.getBeanDefinition();
+
+//            addGenericArgumentValue  first  or got error
             definition.getConstructorArgumentValues().addGenericArgumentValue(definition.getBeanClassName());
             definition.setBeanClass(MapperFactoryBean.class);
+//            todo 更新操作api
             definition.getPropertyValues().add("jedisRepositoryContext",new RuntimeBeanReference("jedisRepositoryContext"));
             definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
 
@@ -75,10 +72,9 @@ public class SupportRedisScanner extends ClassPathBeanDefinitionScanner {
 
     protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
 
-
         if (!beanDefinition.getMetadata().isInterface()
                 || beanDefinition.getMetadata().getInterfaceNames().length == 0
-                || !Arrays.asList(beanDefinition.getMetadata().getInterfaceNames()).contains(Constants.API)
+                || !Arrays.asList(beanDefinition.getMetadata().getInterfaceNames()).contains(OdiesRepository.class.getName())
         )
             return false;
 
@@ -87,8 +83,7 @@ public class SupportRedisScanner extends ClassPathBeanDefinitionScanner {
             ParameterizedType parameterizedType = (ParameterizedType) clazz.getGenericInterfaces()[0];
             Class entityClass = (Class) parameterizedType.getActualTypeArguments()[0];
 
-            logger.info("[suppot-jedis]:RoEntity " + entityClass.getName());
-
+            logger.info("[suppot-odies]:RoEntity " + entityClass.getName());
 
             RoEntityMeta roEntityMeta = RoEntityMeta.fromClass(entityClass);
             JedisRepositoryContext.roEntityMetaMapCache.put(clazz.getName(),roEntityMeta);
@@ -102,17 +97,6 @@ public class SupportRedisScanner extends ClassPathBeanDefinitionScanner {
 
         return false;
     }
-
-    protected boolean checkCandidate(String beanName, BeanDefinition beanDefinition) {
-        if (super.checkCandidate(beanName, beanDefinition)) {
-            return true;
-        } else {
-            this.logger.warn("Skipping MapperFactoryBean with name '" + beanName + "' and '" + beanDefinition.getBeanClassName() + "' mapperInterface. Bean already defined with the same name!");
-            return false;
-        }
-    }
-
-
 
     public Class<? extends Annotation> getAnnotationClass() {
         return annotationClass;

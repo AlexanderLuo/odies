@@ -1,4 +1,4 @@
-package org.share.odies.core.proxy.methods;
+package org.share.odies.core.methods;
 
 import org.share.odies.api.JedisTemplate;
 import org.share.odies.core.proxy.Invocation;

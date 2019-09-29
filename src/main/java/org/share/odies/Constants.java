@@ -1,9 +1,7 @@
 package org.share.odies;
 
-import org.share.odies.api.JedisRepository;
 
 public interface Constants {
-    String API = JedisRepository.class.getName();
 
 
     String[] SAVEMETHODS = new String[]{"save","saveAll"};

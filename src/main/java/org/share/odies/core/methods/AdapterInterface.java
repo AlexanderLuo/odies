@@ -1,4 +1,4 @@
-package org.share.odies.core.proxy.methods;
+package org.share.odies.core.methods;
 
 import com.alibaba.fastjson.JSON;
 import org.share.odies.api.JedisTemplate;
@@ -61,7 +61,7 @@ abstract class AdapterInterface implements Invoker {
      *  Method Info
     ********************************************************************************************************************/
     String getMethodName(){ return  invocation.getMethodName();}
-    int getArgumentsSize(){ return invocation.getArguments().length;}
+    int getArgumentsSize(){ return invocation.getArguments()==null?0:invocation.getArguments().length;}
     boolean hasArguments(){ return getArgumentsSize() > 0;}
     Object[] getArguments(){ return invocation.getArguments();}
     Class[] getArgumentsType(){return invocation.getParameterTypes();}

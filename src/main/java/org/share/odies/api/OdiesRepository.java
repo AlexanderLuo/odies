@@ -8,10 +8,10 @@ import org.springframework.data.domain.Page;
 import java.io.Serializable;
 import java.util.List;
 
-public interface JedisRepository<T> {
+public interface OdiesRepository<T> {
 
 //    ok
-    <S extends T> T save(T ro);
+    <S extends T> S save(T ro);
 //    ok
     T findById(Serializable id);
 //    ok

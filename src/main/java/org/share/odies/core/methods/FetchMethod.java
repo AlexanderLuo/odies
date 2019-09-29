@@ -1,4 +1,4 @@
-package org.share.odies.core.proxy.methods;
+package org.share.odies.core.methods;
 
 import com.alibaba.fastjson.JSON;
 import org.share.odies.api.JedisTemplate;
