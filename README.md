@@ -26,5 +26,6 @@ orm-redis
 ## TODO
 
     1.more feature
-    2.doc
+    2.lua support
+    3.doc
 
