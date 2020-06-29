@@ -8,19 +8,18 @@ import org.springframework.data.domain.Page;
 import java.io.Serializable;
 import java.util.List;
 
-public interface OdiesRepository<T> {
+public interface OdiesRepository<T,ID> {
 
 //    ok
-    <S extends T> S save(T ro);
+    void save(T ro);
 //    ok
-    T findById(Serializable id);
+    T findById(ID id);
 //    ok
-    boolean exists(Serializable id);
+    boolean exists(ID id);
 //    ok
-    void delete(Serializable id);
+    void delete(ID id);
 //    ok
     long count();
-
 
 //  ok
     List<T> findAll();
@@ -31,14 +30,14 @@ public interface OdiesRepository<T> {
     void deleteAll();
 
 
-    <S extends T> List<S> saveAll(Iterable<S> ros);
-    List<T> findAllById(Iterable<Serializable> ids);
-    void deleteAllById(Iterable<Serializable> ids);
+
+    void saveAll(Iterable<T> ros);
 
 
-//    ok
-    boolean lock(String key);
-//    ok
-    void unlock(String key);
+    List<T> findAllById(Iterable<ID> ids);
+
+    void deleteAllById(Iterable<ID> ids);
+
+
 
 }
