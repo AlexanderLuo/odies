@@ -18,6 +18,7 @@ public interface ConvertorRegistry {
 	 */
 	<V> void registerConvertor(Class<V> clazz, ValueConvertor<V> convertor);
 
+
 	/**
 	 * 根据类型寻找对应的 convertor,先找默认匹配策略,再找自定义匹配策略
 	 * @param clazz
