@@ -4,7 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.share.odies.annotation.*;
-import org.share.odies.bean.BaseRedisObject;
+import org.share.odies.bean.IdRedisEntity;
 import org.share.odies.utils.ExpressionUtil;
 import org.share.odies.utils.RedisUtil;
 import org.share.odies.utils.SortedSetAssist;
@@ -28,7 +28,14 @@ import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-public class ShardedJedisCurdCommonRedisDao<T extends BaseRedisObject<ID>, ID extends Serializable> extends ShardedJedisRedis {
+
+/**
+ * @version V1.0, 2020-06-30
+ * @author Alexander Lo
+ * @code wrapper
+ */
+public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID extends Serializable>
+        extends ShardedJedisRedis {
 
     private static final String SEPARATOR = ":";
 
@@ -200,7 +207,7 @@ public class ShardedJedisCurdCommonRedisDao<T extends BaseRedisObject<ID>, ID ex
         roSortedSet = entityClass.getAnnotation(RoSortedSet.class);
         isExistRoSortedSet = (roSortedSet == null ? false : true);
         if (isExistRoSortedSet) {
-            roSortedSetKey = (getKeyPrefix() + SEPARATOR + roSortedSet.key()).intern();
+            roSortedSetKey = (getKeyPrefix() + SEPARATOR + roSortedSet.prefix()).intern();
             if (StringUtils.isNotBlank(roSortedSet.score())) {
                 expression = parser.parseExpression(roSortedSet.score());
             }

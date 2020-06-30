@@ -1,16 +1,17 @@
 package org.share.odies.utils;
 
-import org.share.odies.bean.BaseRedisObject;
+import org.share.odies.bean.IdRedisEntity;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import java.io.Serializable;
 
 /**
- * 属性注解 方法注解辅助类
- * 
+ * @version V1.0, 2020-06-30
+ * @author Alexander Lo
+ * @code helper
  */
-public class SortedSetAssist<T extends BaseRedisObject<ID>, ID extends Serializable> {
+public class SortedSetAssist<T extends IdRedisEntity<ID>, ID extends Serializable> {
 
 	private String fieldName;
 	private String prefix;

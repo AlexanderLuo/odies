@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel("odies PageResult VO")
+@ApiModel("PageResult VO")
 public class PageResult<E> implements Serializable {
     @ApiModelProperty("Fetch Page [Start From 0]")
     private int page = 0;

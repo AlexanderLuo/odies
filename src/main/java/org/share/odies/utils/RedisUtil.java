@@ -13,6 +13,12 @@ import java.util.Set;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
+
+/**
+ * @version V1.0, 2020-06-30
+ * @author Alexander Lo
+ * @code to byte
+ */
 public final class RedisUtil {
 
     private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");

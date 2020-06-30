@@ -1,8 +1,8 @@
 package org.share.odies.service;
 
 import com.google.common.collect.Sets;
-import org.share.odies.api.OdiesRepository;
-import org.share.odies.bean.BaseRedisObject;
+import org.share.odies.api.JedisCurdRepository;
+import org.share.odies.bean.IdRedisEntity;
 import org.share.odies.exceptions.OdiesUsageException;
 import org.share.odies.utils.RedisUtil;
 import org.share.odies.vo.PageOf;
@@ -21,8 +21,8 @@ import java.util.*;
  * @author Alexander Lo
  * @code  默认实现
  */
-public class DefaultOdiesRepository<T extends BaseRedisObject<ID>, ID extends Serializable>
-		extends ShardedJedisCurdCommonRedisDao<T, ID>  implements OdiesRepository<T,ID> {
+public class DefaultJedisRepository<T extends IdRedisEntity<ID>, ID extends Serializable>
+		extends ShardedJedisCurdCommonRedisDao<T, ID>  implements JedisCurdRepository<T,ID> {
 
 
 
