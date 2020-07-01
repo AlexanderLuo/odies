@@ -13,6 +13,8 @@ public interface JedisCurdRepository<T,ID>  {
 
     void save(T ro);
     T findById(ID id);
+    List<T> findByIds(Iterable<ID> ids);
+
     boolean exists(ID id);
     void delete(ID id);
     long count();

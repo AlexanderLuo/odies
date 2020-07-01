@@ -4,7 +4,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.share.odies.annotation.*;
+import org.share.odies.annotation.SortedSet;
 import org.share.odies.bean.IdRedisEntity;
+import org.share.odies.exceptions.OdiesUsageException;
 import org.share.odies.utils.ExpressionUtil;
 import org.share.odies.utils.RedisUtil;
 import org.share.odies.utils.SortedSetAssist;
@@ -28,190 +30,71 @@ import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-
 /**
  * @version V1.0, 2020-06-30
  * @author Alexander Lo
  * @code wrapper
  */
-public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID extends Serializable>
-        extends ShardedJedisRedis {
+public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID extends Serializable>  extends ShardedJedisRedis {
 
-    private static final String SEPARATOR = ":";
+
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
+    private static final String SEPARATOR = ":";
+    private static final String DEFAULT_RO_ZSET_KEY = "list";
 
+
+    //   T  实际类
     private Class<T> entityClass;
-
-    /**
-     * ro key
-     */
     private String keyPrefix = null;
-    private boolean isExistRo = false;
-
-    private String roLockKeyPrefix = null;
-    private boolean isExistRoLock = false;
-    private RoLock roLock = null;
-
+    // save Ro 计算分值
+    private Expression expression = null;
+    // ro.prefix:sort.prefix
     private String roSortedSetKey = null;
-    private boolean isExistRoSortedSet = false;
-    private RoSortedSet roSortedSet = null;
-
-    Expression expression = null;
-
-    Map<String, FieldSortedSet> fieldName_Annotation_Map = null;
-    Map<FieldSortedSet, SortedSetAssist<T, ID>> fieldInSortedSetMap = null;
-
-    Map<String, MethodSortedSet> methodName_Annotation_Map = null;
-    Map<MethodSortedSet, SortedSetAssist<T, ID>> methodInSortedSetMap = null;
-
-    public String getKeyByParams(Object... params) {
-        StringBuffer key = new StringBuffer(getKeyPrefix());
-        if (params != null && params.length > 0) {
-            for (Object param : params) {
-                key.append(SEPARATOR).append(String.valueOf(param));
-            }
-        }
-        return key.toString();
-    }
-
-    /**
-     * @param fieldName 类属性名称
-     * @param fieldValue 属性对应的值
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月15日
-     */
-    public String getFieldSortedSetKey(String fieldName, Object fieldValue) {
-        StringBuffer key = new StringBuffer();
-        FieldSortedSet fieldSortedSet = fieldName_Annotation_Map.get(fieldName);
-        if (fieldSortedSet == null) {
-            throw new RuntimeException("[" + fieldName + "]--> FieldSortedSet is null");
-        }
-        String value = (fieldValue != null ? fieldValue.toString() : "");
-        if ("".equals(fieldSortedSet.prefix())) {
-            key.append(getKeyPrefix()).append(SEPARATOR).append(fieldName).append(SEPARATOR).append(value);
-        } else {
-            key.append(fieldSortedSet.prefix()).append(SEPARATOR).append(fieldName).append(SEPARATOR).append(value);
-        }
-        return key.toString();
-    }
-
-    /**
-     * @param methodName 类方法的名称
-     * @param fieldValue 方法对应属性的值
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月15日
-     */
-    public String getMethodSortedSetKey(String methodName, Object fieldValue) {
-        StringBuffer key = new StringBuffer();
-        MethodSortedSet methodSortedSet = methodName_Annotation_Map.get(methodName);
-        if (methodSortedSet == null)
-            throw new RuntimeException("[" + methodName + "]--> MethodSortedSet is null");
-        String value = (fieldValue != null ? fieldValue.toString() : "");
-        if (methodSortedSet.prefix().equals("")) {
-            key.append(getKeyPrefix()).append(SEPARATOR).append(methodName).append(SEPARATOR).append(value);
-        } else {
-            key.append(methodSortedSet.prefix()).append(SEPARATOR).append(methodName).append(SEPARATOR).append(value);
-        }
-        return key.toString();
-    }
-
-    public String getKeyPrefix() {
-        return keyPrefix.toString();
-    }
 
 
 
-    /**
-     * @version V1.0, 2020-06-29
-     * @author Alexander Lo
-     * @code 实体 id 映射到 redis的 最终key
-     */
-    public String getHashKey(Serializable id) {
-        return new StringBuffer(getKeyPrefix()).append(SEPARATOR).append(id).toString();
-    }
+    private Map<String, SortedSet> fieldName_Annotation_Map = null;
+    private Map<SortedSet, SortedSetAssist<T, ID>> fieldInSortedSetMap = null;
 
 
-    /**
-     * @version V1.0, 2020-06-29
-     * @author Alexander Lo
-     * @code 获取对应的 实体 排序 zsetKey
-     */
-    public String getRoSortedSetKey() {
-        return roSortedSetKey;
-    }
+    private Map<String, SortedSet> methodName_Annotation_Map = null;
+    private Map<SortedSet, SortedSetAssist<T, ID>> methodInSortedSetMap = null;
 
 
 
-    //ro
-    public String getHashKeyFromIdByte(byte[] byteId) {
-        return new StringBuffer(getKeyPrefix()).append(SEPARATOR).append(new String(byteId)).toString();
-    }
-
-    //lock
-    public String getRoLockKeyPrefix() {
-        return roLockKeyPrefix.toString();
-    }
-
-    //lock
-    public String getLockHashKey(Serializable id) {
-        return new StringBuffer(getRoLockKeyPrefix()).append(SEPARATOR).append(id).toString();
-    }
-
-    //lock
-    public String getLockHashKeyFromIdByte(byte[] byteId) {
-        return new StringBuffer(getRoLockKeyPrefix()).append(SEPARATOR).append(new String(byteId)).toString();
-    }
-
-    public String getRoLockKeyByParams(Object... params) {
-        StringBuffer key = new StringBuffer(getRoLockKeyPrefix());
-        if (params != null && params.length > 0) {
-            for (Object param : params) {
-                key.append(SEPARATOR).append(param.toString());
-            }
-        }
-        return key.toString();
-    }
 
     @SuppressWarnings("unchecked")
     public ShardedJedisCurdCommonRedisDao() {
         super();
 
-        /** getClass().getGenericSuperclass()返回表示此 Class 所表示的实体（类、接口、基本类型或 void）
-         *  的直接超类的 Type(Class<T>泛型中的类型)，然后将其转换ParameterizedType。。 
-         *  getActualTypeArguments()返回表示此类型实际类型参数的 Type 对象的数组。 
-         *  [0]就是这个数组中第一个了。。 
-         *  简而言之就是获得超类的泛型参数的实际类型。。*/
         entityClass = (Class<T>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 
         //类ro基础注解
         Ro ro = entityClass.getAnnotation(Ro.class);
-        isExistRo = (ro == null ? false : true);
-        if (isExistRo) {
+
+        if (ro != null) {
             keyPrefix = ro.prefix().intern();
         } else {
-            //keyPrefix.append(entityClass.getCanonicalName());
-            throw new RuntimeException("not find Ro annotation");
+            throw new OdiesUsageException("Not find Ro annotation");
         }
 
-        //类roLock锁注解
-        roLock = entityClass.getAnnotation(RoLock.class);
-        isExistRoLock = (roLock == null ? false : true);
-        if (isExistRoLock) {
-            roLockKeyPrefix = roLock.key().intern();
-        }
+
 
         ExpressionParser parser = new SpelExpressionParser();
 
-        //类roSortedSet注解 基于类ro注解
-        roSortedSet = entityClass.getAnnotation(RoSortedSet.class);
-        isExistRoSortedSet = (roSortedSet == null ? false : true);
-        if (isExistRoSortedSet) {
-            roSortedSetKey = (getKeyPrefix() + SEPARATOR + roSortedSet.prefix()).intern();
+        SortedSet roSortedSet = entityClass.getAnnotation(SortedSet.class);
+
+        if(roSortedSet != null){
+            roSortedSetKey = getKeyPrefix() + SEPARATOR + roSortedSet.prefix();
             if (StringUtils.isNotBlank(roSortedSet.score())) {
                 expression = parser.parseExpression(roSortedSet.score());
             }
+        }else {
+            roSortedSetKey =  getKeyPrefix() + SEPARATOR + DEFAULT_RO_ZSET_KEY;
         }
+
+
 
         if (entityClass != null) {
             /**返回类中所有字段，包括公共、保护、默认（包）访问和私有字段，但不包括继承的字段 
@@ -220,26 +103,30 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
              * 可看API 
              * */
             Field[] fields = entityClass.getDeclaredFields();
-            if (fields != null && fields.length > 0) {
+            if (fields.length > 0) {
                 for (Field field : fields) {
                     if (!Modifier.isFinal(field.getModifiers())) {
                         field.setAccessible(true);//修改访问权限
+
                         //获取字段中包含的注解
-                        FieldSortedSet fieldSortedSet = field.getAnnotation(FieldSortedSet.class);
-                        boolean isExistFieldSortedSet = (fieldSortedSet == null ? false : true);
-                        if (isExistFieldSortedSet) {
+                        SortedSet fieldSortedSet = field.getAnnotation(SortedSet.class);
+
+                        if (fieldSortedSet != null) {
+
                             if (fieldInSortedSetMap == null) {
                                 fieldInSortedSetMap = new HashMap<>();
                             }
                             if (fieldName_Annotation_Map == null) {
                                 fieldName_Annotation_Map = new HashMap<>();
                             }
+
+
                             fieldInSortedSetMap.put(
                                     fieldSortedSet,
-                                    new SortedSetAssist<T, ID>(
+                                    new SortedSetAssist<>(
                                             field.getName(),
                                             StringUtils.isBlank(fieldSortedSet.prefix()) ? getKeyPrefix() + SEPARATOR + field.getName() : fieldSortedSet.prefix() + SEPARATOR + field.getName(),
-                                            parser.parseExpression(fieldSortedSet.key()),
+                                            parser.parseExpression(fieldSortedSet.prefix()),
                                             StringUtils.isNotBlank(fieldSortedSet.score()) ? parser.parseExpression(fieldSortedSet.score()) : null
                                     )
                             );
@@ -249,15 +136,16 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
                 }
             }
 
+
             Method[] methods = entityClass.getMethods();
-            if (methods != null && methods.length > 0) {
+            if (methods.length > 0) {
                 for (Method method : methods) {
                     if (!Modifier.isFinal(method.getModifiers())) {
                         method.setAccessible(true);//修改访问权限
                         //获取方法中包含的注解
-                        MethodSortedSet methodSortedSet = method.getAnnotation(MethodSortedSet.class);
-                        boolean isExistMethodSortedSet = (methodSortedSet == null ? false : true);
-                        if (isExistMethodSortedSet) {
+
+                        SortedSet methodSortedSet = method.getAnnotation(SortedSet.class);
+                        if (methodSortedSet != null) {
                             if (methodInSortedSetMap == null) {
                                 methodInSortedSetMap = new HashMap<>();
                             }
@@ -266,13 +154,14 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
                             }
                             methodInSortedSetMap.put(
                                     methodSortedSet,
-                                    new SortedSetAssist<T, ID>(
+                                    new SortedSetAssist<>(
                                             method.getName(),
                                             StringUtils.isBlank(methodSortedSet.prefix()) ? getKeyPrefix() + SEPARATOR + method.getName() : methodSortedSet.prefix() + SEPARATOR + method.getName(),
-                                            parser.parseExpression(methodSortedSet.key()),
+                                            parser.parseExpression(methodSortedSet.prefix()),
                                             StringUtils.isNotBlank(methodSortedSet.score()) ? parser.parseExpression(methodSortedSet.score()) : null
                                     )
                             );
+
                             methodName_Annotation_Map.put(method.getName(), methodSortedSet);
                         }
                     }
@@ -280,235 +169,6 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
             }
         }
     }
-
-    private T instance() {
-        try {
-            return entityClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
-
-    public List<String> getKeyListFromSortedSet(String roSortedSetKey) {
-        Set<byte[]> ids = zRange(roSortedSetKey, 0, -1);
-        if (CollectionUtils.isNotEmpty(ids)) {
-            List<String> keys = new ArrayList<>(ids.size());
-            for (byte[] bid : ids) {
-                keys.add(getHashKeyFromIdByte(bid));
-            }
-            return keys;
-        }
-        return newArrayList();
-    }
-
-
-
-    /**
-     * 根据roSortedSetKey ids得到对象的所有key集合
-     *
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月12日
-     */
-    public List<String> getKeyListByIdSet(Set<byte[]> ids) {
-        if (CollectionUtils.isNotEmpty(ids)) {
-            List<String> keys = new ArrayList<>(ids.size());
-            for (byte[] bid : ids) {
-                keys.add(getHashKeyFromIdByte(bid));
-            }
-            return keys;
-        }
-        return newArrayList();
-    }
-
-
-
-    /**
-     * 根据页面查询当前对象集合升序排列
-     *
-     * @param page 第一页为: 1
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月12日
-     */
-    public List<T> findByScoreAsc(Integer page) {
-        Set<byte[]> ids = zRange(this.getRoSortedSetKey(), Math.max(0, page - 1) * 10, Math.max(1, page) * 10 - 1);
-        return findByKeys(toHashKeys(ids));
-    }
-
-    /**
-     * 根据页面查询当前对象集合降序排列
-     *
-     * @param page 第一页为: 1
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月12日
-     */
-    public List<T> findByScoreDesc(Integer page) {
-        Set<byte[]> ids = zrevrange(this.getRoSortedSetKey(), Math.max(0, page - 1) * 10, Math.max(1, page) * 10 - 1);
-        return findByKeys(toHashKeys(ids));
-    }
-    /**
-     * 根据页面查询当前对象集合降序排列
-     *
-     * @param page 第一页为: 1
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月12日
-     */
-    public List<T> findByScoreDesc(Integer page, Integer size) {
-    	if(size == null || size < 1){
-    		size = 10;
-    	}
-    	Set<byte[]> ids = zrevrange(this.getRoSortedSetKey(), Math.max(0, page - 1) * size, Math.max(1, page) * size - 1);
-    	return findByKeys(toHashKeys(ids));
-    }
-
-    /**
-     * 获取集合keys
-     *
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月12日
-     */
-    private List<String> toHashKeys(Collection<byte[]> ids) {
-        if (CollectionUtils.isNotEmpty(ids)) {
-            List<String> keys = new ArrayList<>(ids.size());
-            for (byte[] bid : ids) {
-                keys.add(getHashKeyFromIdByte(bid));
-            }
-            return keys;
-        } else {
-            return newArrayList();
-        }
-    }
-
-    
-    /**
-     * 根据当前集合id查询集合对象
-     *
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月12日
-     */
-    public List<T> findByIdsWithNull(Iterable<ID> ids) {
-        if (ids == null || !ids.iterator().hasNext())
-            return newArrayList();
-        List<String> keys = new ArrayList<String>();
-        for (ID id : ids) {
-            keys.add(getHashKey(id));
-        }
-        return findByKeysWithNull(keys);
-    }
-
-
-    /**
-     * 根据当前集合id查询集合对象
-     *
-     * @author shutao.gong
-     * @date 2016年8月13日
-     */
-    public List<T> findByStrIds(Iterable<String> ids) {
-        if (ids == null || !ids.iterator().hasNext())
-            return newArrayList();
-        List<String> keys = new ArrayList<String>();
-        for (String id : ids) {
-            keys.add(getHashKey(id));
-        }
-        return findByKeys(keys);
-    }
-
-    /**
-     * 根据id查询集合对象
-     *
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月12日
-     */
-    public List<T> findByIds(Set<byte[]> ids) {
-        if (CollectionUtils.isEmpty(ids))
-            return newArrayList();
-        List<String> keys = new ArrayList<String>(ids.size());
-        for (byte[] id : ids) {
-            keys.add(getHashKeyFromIdByte(id));
-        }
-        return findByKeys(keys);
-    }
-
-    /**
-     * 根据id集合查询集合map key id  value t对象
-     *
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月12日
-     */
-    public Map<ID, T> findMapByIds(Iterable<ID> ids) {
-        if (ids == null || !ids.iterator().hasNext())
-            return new HashMap<ID, T>();
-        List<String> keys = new ArrayList<String>();
-        for (ID id : ids) {
-            keys.add(getHashKey(id));
-        }
-        List<T> list = findByKeys(keys);
-        if (!CollectionUtils.isEmpty(list)) {
-            Map<ID, T> result = new HashMap<ID, T>();
-            for (T t : list) {
-                if (t != null) {
-                    result.put(t.getId(), t);
-                }
-            }
-            return result;
-        }
-        return new HashMap<ID, T>();
-    }
-
-    /**
-     * 根据id查询map
-     *
-     * @author jun.liu(by xiaoyu)
-     * @date 2016年8月12日
-     */
-    public Map<ID, T> findMapByIds(Set<byte[]> ids) {
-        if (CollectionUtils.isEmpty(ids))
-            return new HashMap<ID, T>();
-        List<String> keys = new ArrayList<String>(ids.size());
-        for (byte[] id : ids) {
-            keys.add(getHashKeyFromIdByte(id));
-        }
-        List<T> list = findByKeys(keys);
-        if (!CollectionUtils.isEmpty(list)) {
-            Map<ID, T> result = new HashMap<ID, T>();
-            for (T t : list) {
-                if (t != null) {
-                    result.put(t.getId(), t);
-                }
-            }
-            return result;
-        }
-        return new HashMap<ID, T>();
-    }
-
-
-    
-    @SuppressWarnings("unchecked")
-    public List<T> findByKeysWithNull(List<String> keys) {
-        List<T> result = newArrayList();
-        if (CollectionUtils.isNotEmpty(keys)) {
-            List<Object> list = pipeHgetall(keys);
-            for (int i = 0; i < list.size(); i++) {
-                Map<byte[], byte[]> map = (Map<byte[], byte[]>) list.get(i);
-                if (map == null || map.isEmpty()) {
-                    // 这一行不能注释, 注释了打死!!!!!
-                    result.add(null);
-                } else {
-                    T ro = instance();
-                    try {
-                        ro.fromMap(map);
-                    } catch (Exception e) {
-                        logger.error("ro.fromMap", e);
-                    }
-                    result.add(ro);
-                }
-            }
-        }
-        return result;
-    }
-
 
 
 
@@ -571,6 +231,7 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
 
 
 
+
     /**
      * @version V1.0, 2020-06-29
      * @author Alexander Lo
@@ -609,26 +270,26 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
      * @code 单个保存 同时建立zset
      */
     public void save(T ro) {
-        if (isExistRoSortedSet) {
-            long score = ExpressionUtil.getScore(new StandardEvaluationContext(ro), expression);
-            zadd(this.getRoSortedSetKey(), score, RedisUtil.toByteArray(ro.getId()));
-        }
+        long score = ExpressionUtil.getScore(new StandardEvaluationContext(ro), expression);
+        zadd(this.getRoSortedSetKey(), score, RedisUtil.toByteArray(ro.getId()));
 
         if (MapUtils.isNotEmpty(fieldInSortedSetMap)) {
-            for (FieldSortedSet fieldSortedSet : fieldInSortedSetMap.keySet()) {
+            for (SortedSet fieldSortedSet : fieldInSortedSetMap.keySet()) {
                 SortedSetAssist<T, ID> field = fieldInSortedSetMap.get(fieldSortedSet);
                 zadd(field.getKey(ro), field.getScore(ro), RedisUtil.toByteArray(ro.getId()));
             }
         }
 
         if (MapUtils.isNotEmpty(methodInSortedSetMap)) {
-            for (MethodSortedSet methodSortedSet : methodInSortedSetMap.keySet()) {
+            for (SortedSet methodSortedSet : methodInSortedSetMap.keySet()) {
                 SortedSetAssist<T, ID> method = methodInSortedSetMap.get(methodSortedSet);
                 zadd(method.getKey(ro), method.getScore(ro), RedisUtil.toByteArray(ro.getId()));
             }
         }
-        hmset(getHashKey(ro.getId()), ro.toMap());
+
+        hmset(getRoFullKey(ro.getId()), ro.toMap());
     }
+
 
 
 
@@ -638,9 +299,7 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
      * @author Alexander Lo
      * @code 批量保存
      */
-    @SuppressWarnings("deprecation")
     public void save(Iterable<T> ros) {
-        //如果注入的是ComJedisRedis<ShardedJedis>
         Pool<ShardedJedis> pool = getPool();
         ShardedJedis jedis = null;
         try {
@@ -654,7 +313,9 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
             logger.error("redis save iterator error.", e);
         }
         finally {
-            pool.returnResource(jedis);
+            if (jedis != null) {
+                jedis.close();
+            }
         }
     }
 
@@ -666,25 +327,24 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
      * @code 批量保存实现
      */
     private void save(T ro, PipelineBase pipeline) {
-        if (isExistRoSortedSet) {
-            long score = ExpressionUtil.getScore(new StandardEvaluationContext(ro), expression);
-            pipeline.zadd(RedisUtil.toByteArray(this.getRoSortedSetKey()), score, RedisUtil.toByteArray(ro.getId()));
-        }
+
+        long score = ExpressionUtil.getScore(new StandardEvaluationContext(ro), expression);
+        pipeline.zadd(RedisUtil.toByteArray(this.getRoSortedSetKey()), score, RedisUtil.toByteArray(ro.getId()));
 
         if (MapUtils.isNotEmpty(fieldInSortedSetMap)) {
-            for (FieldSortedSet fieldSortedSet : fieldInSortedSetMap.keySet()) {
+            for (SortedSet fieldSortedSet : fieldInSortedSetMap.keySet()) {
                 SortedSetAssist<T, ID> field = fieldInSortedSetMap.get(fieldSortedSet);
                 pipeline.zadd(RedisUtil.toByteArray(field.getKey(ro)), field.getScore(ro), RedisUtil.toByteArray(ro.getId()));
             }
         }
 
         if (MapUtils.isNotEmpty(methodInSortedSetMap)) {
-            for (MethodSortedSet methodSortedSet : methodInSortedSetMap.keySet()) {
+            for (SortedSet methodSortedSet : methodInSortedSetMap.keySet()) {
                 SortedSetAssist<T, ID> method = methodInSortedSetMap.get(methodSortedSet);
                 pipeline.zadd(RedisUtil.toByteArray(method.getKey(ro)), method.getScore(ro), RedisUtil.toByteArray(ro.getId()));
             }
         }
-        pipeline.hmset(RedisUtil.toByteArray(getHashKey(ro.getId())), ro.toMap());
+        pipeline.hmset(RedisUtil.toByteArray(getRoFullKey(ro.getId())), ro.toMap());
     }
 
 
@@ -698,24 +358,23 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
      */
     public void delete(T ro) {
         if (ro != null) {
-            if (isExistRoSortedSet) {
-                zrem(this.getRoSortedSetKey(), RedisUtil.toByteArray(ro.getId()));
-            }
+
+            zrem(this.getRoSortedSetKey(), RedisUtil.toByteArray(ro.getId()));
 
             if (MapUtils.isNotEmpty(fieldInSortedSetMap)) {
-                for (FieldSortedSet fieldSortedSet : fieldInSortedSetMap.keySet()) {
+                for (SortedSet fieldSortedSet : fieldInSortedSetMap.keySet()) {
                     SortedSetAssist<T, ID> field = fieldInSortedSetMap.get(fieldSortedSet);
                     zrem(field.getKey(ro), RedisUtil.toByteArray(ro.getId()));
                 }
             }
 
             if (MapUtils.isNotEmpty(methodInSortedSetMap)) {
-                for (MethodSortedSet methodSortedSet : methodInSortedSetMap.keySet()) {
+                for (SortedSet methodSortedSet : methodInSortedSetMap.keySet()) {
                     SortedSetAssist<T, ID> method = methodInSortedSetMap.get(methodSortedSet);
                     zrem(method.getKey(ro), RedisUtil.toByteArray(ro.getId()));
                 }
             }
-            del(getHashKey(ro.getId()));
+            del(getRoFullKey(ro.getId()));
         }
     }
 
@@ -725,9 +384,75 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
 
 
 
-    protected boolean hasRoSortedSet(){
-        return this.isExistRoSortedSet;
+
+    /********************************************************************************************************************
+     *  Normal get/set
+    ********************************************************************************************************************/
+    public String getKeyPrefix() {
+        return keyPrefix;
+    }
+    public String getRoFullKey(Serializable id) {
+        return getKeyPrefix() + SEPARATOR + id;
+    }
+
+    public String getRoFullKey(byte[] byteId) {
+        return getKeyPrefix() + SEPARATOR + new String(byteId);
+    }
+
+    public List<String> getRoFullKey(Collection<byte[]> ids) {
+        if (CollectionUtils.isNotEmpty(ids)) {
+            List<String> keys = new ArrayList<>(ids.size());
+            for (byte[] bid : ids) {
+                keys.add(getRoFullKey(bid));
+            }
+            return keys;
+        } else {
+            return newArrayList();
+        }
     }
 
 
+
+    public String getRoSortedSetKey() {
+        return roSortedSetKey;
+    }
+
+
+
+    /**
+     * @version V1.0, 2020-06-30
+     * @author Alexander Lo
+     * @code 获取 sorted set 里面的所有key
+     */
+    public List<String> getKeyListFromSortedSet(String roSortedSetKey) {
+        Set<byte[]> ids = zRange(roSortedSetKey, 0, -1);
+        return getKeyListByIdSet(ids);
+    }
+
+    /**
+     * @version V1.0, 2020-06-30
+     * @author Alexander Lo
+     * @code id -> key
+     */
+    public List<String> getKeyListByIdSet(Set<byte[]> ids) {
+        if (CollectionUtils.isNotEmpty(ids)) {
+            List<String> keys = new ArrayList<>(ids.size());
+            for (byte[] bid : ids) {
+                keys.add(getRoFullKey(bid));
+            }
+            return keys;
+        }
+        return newArrayList();
+    }
+
+
+
+    private T instance() {
+        try {
+            return entityClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

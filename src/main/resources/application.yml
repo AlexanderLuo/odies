@@ -11,3 +11,4 @@ spring:
         min-idle: 5
         max-active: 100
         max-wait: 6000
+    password:
