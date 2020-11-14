@@ -14,8 +14,8 @@ import java.util.stream.IntStream;
 
 
 /**
- * @version V1.0, 2020-06-30
  * @author Alexander Lo
+ * @version V1.0, 2020-06-30
  * @code
  */
 public class ShardedJedisRedis implements RCommands<ShardedJedis> {
@@ -24,11 +24,12 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
     protected ShardedJedisPool shardedJedisPool;
 
 
-    public ShardedJedisRedis() { }
+    public ShardedJedisRedis() {
+    }
+
     protected Pool<ShardedJedis> getPool() {
         return this.shardedJedisPool;
     }
-
 
 
     @Override
@@ -1890,7 +1891,7 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
 
         Set var8;
         try {
-            var8 = jedis.zrangeByScore(key, (double)min, (double)max);
+            var8 = jedis.zrangeByScore(key, (double) min, (double) max);
         } catch (Throwable var17) {
             var7 = var17;
             throw var17;
@@ -1972,8 +1973,8 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
             ShardedJedisPipeline jedisPipeline = jedis.pipelined();
             Iterator var5 = ids.iterator();
 
-            while(var5.hasNext()) {
-                String id = (String)var5.next();
+            while (var5.hasNext()) {
+                String id = (String) var5.next();
                 jedisPipeline.hgetAll(id.getBytes());
             }
 
@@ -2034,8 +2035,8 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
             ShardedJedisPipeline jedisPipeline = jedis.pipelined();
             Iterator var8 = members.iterator();
 
-            while(var8.hasNext()) {
-                String member = (String)var8.next();
+            while (var8.hasNext()) {
+                String member = (String) var8.next();
                 jedisPipeline.zadd(key.getBytes(), score, member.getBytes());
             }
 
@@ -2067,8 +2068,8 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
             ShardedJedisPipeline jedisPipeline = jedis.pipelined();
             Iterator var5 = ids.iterator();
 
-            while(var5.hasNext()) {
-                String id = (String)var5.next();
+            while (var5.hasNext()) {
+                String id = (String) var5.next();
                 jedisPipeline.zcard(id.getBytes());
             }
 
@@ -2101,8 +2102,8 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
             ShardedJedisPipeline jedisPipeline = jedis.pipelined();
             Iterator var6 = hashs.iterator();
 
-            while(var6.hasNext()) {
-                Map<byte[], byte[]> hash = (Map)var6.next();
+            while (var6.hasNext()) {
+                Map<byte[], byte[]> hash = (Map) var6.next();
                 jedisPipeline.hmset(key.getBytes(), hash);
             }
 
@@ -2464,7 +2465,7 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
         try {
             ShardedJedisPipeline jedisPipeline = jedis.pipelined();
 
-            for(int i = 0; (long)i < size; ++i) {
+            for (int i = 0; (long) i < size; ++i) {
                 jedisPipeline.rpop(key);
             }
 
@@ -2525,8 +2526,8 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
             ShardedJedisPipeline jedisPipeline = jedis.pipelined();
             Iterator var5 = keys.iterator();
 
-            while(var5.hasNext()) {
-                String key = (String)var5.next();
+            while (var5.hasNext()) {
+                String key = (String) var5.next();
                 jedisPipeline.get(key.getBytes());
             }
 
@@ -2559,8 +2560,8 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
             ShardedJedisPipeline jedisPipeline = jedis.pipelined();
             Iterator var6 = keys.iterator();
 
-            while(var6.hasNext()) {
-                String key = (String)var6.next();
+            while (var6.hasNext()) {
+                String key = (String) var6.next();
                 jedisPipeline.hget(key, field);
             }
 
@@ -2593,11 +2594,11 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
             ShardedJedisPipeline jedisPipeline = jedis.pipelined();
             Iterator var6 = keyToCounts.entrySet().iterator();
 
-            while(var6.hasNext()) {
-                Map.Entry<String, Integer> entry = (Map.Entry)var6.next();
-                Integer value = (Integer)entry.getValue();
+            while (var6.hasNext()) {
+                Map.Entry<String, Integer> entry = (Map.Entry) var6.next();
+                Integer value = (Integer) entry.getValue();
                 if (value != null && value != 0) {
-                    jedisPipeline.hincrBy((String)entry.getKey(), field, (long)value);
+                    jedisPipeline.hincrBy((String) entry.getKey(), field, (long) value);
                 }
             }
 
@@ -2629,7 +2630,7 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
 
             try {
                 ShardedJedisPipeline jedisPipeline = jedis.pipelined();
-                jedisPipeline.zrem(key, (String[])members.toArray(new String[members.size()]));
+                jedisPipeline.zrem(key, (String[]) members.toArray(new String[members.size()]));
                 jedisPipeline.sync();
             } catch (Throwable var13) {
                 var4 = var13;
@@ -2661,9 +2662,9 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
         try {
             ShardedJedisPipeline jedisPipeline = jedis.pipelined();
 
-            for(int i = 0; i < keys.size(); ++i) {
-                String key = (String)keys.get(i);
-                jedisPipeline.set(RedisUtil.toByteArray(key), (byte[])values.get(i));
+            for (int i = 0; i < keys.size(); ++i) {
+                String key = (String) keys.get(i);
+                jedisPipeline.set(RedisUtil.toByteArray(key), (byte[]) values.get(i));
             }
 
             jedisPipeline.sync();
@@ -2694,9 +2695,9 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
             ShardedJedisPipeline jedisPipeline = jedis.pipelined();
             Iterator var6 = keyToValue.entrySet().iterator();
 
-            while(var6.hasNext()) {
-                Map.Entry<String, String> entry = (Map.Entry)var6.next();
-                jedisPipeline.hset((String)entry.getKey(), field, (String)entry.getValue());
+            while (var6.hasNext()) {
+                Map.Entry<String, String> entry = (Map.Entry) var6.next();
+                jedisPipeline.hset((String) entry.getKey(), field, (String) entry.getValue());
             }
 
             jedisPipeline.sync();
@@ -2786,7 +2787,7 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
                 Iterator<byte[]> keyIterator = keys.iterator();
                 Iterator<byte[]> valueIterator = values.iterator();
                 IntStream.range(0, keys.size()).forEach((i) -> {
-                    pipelined.lpush((byte[])keyIterator.next(), new byte[][]{(byte[])valueIterator.next()});
+                    pipelined.lpush((byte[]) keyIterator.next(), new byte[][]{(byte[]) valueIterator.next()});
                 });
                 pipelined.syncAndReturnAll();
             } catch (Throwable var15) {
@@ -2839,10 +2840,10 @@ public class ShardedJedisRedis implements RCommands<ShardedJedis> {
     }
 
 
-
     public void closeShardedJedis(ShardedJedis shardedJedis) {
         shardedJedis.close();
     }
+
     public void setShardedJedisPool(ShardedJedisPool shardedJedisPool) {
         this.shardedJedisPool = shardedJedisPool;
     }

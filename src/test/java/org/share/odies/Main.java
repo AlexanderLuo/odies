@@ -28,15 +28,14 @@ public class Main {
 
 
     @Test
-    public void set(){
-        shardedJedisPool.getResource().set("a",""+System.currentTimeMillis());
+    public void set() {
+        shardedJedisPool.getResource().set("a", "" + System.currentTimeMillis());
         System.err.println(shardedJedisPool.getResource().get("a"));
     }
 
 
-
     @Test
-    public void roSet(){
+    public void roSet() {
         User user = new User();
         user.setId(1L);
         user.setName("测试");
@@ -46,17 +45,15 @@ public class Main {
 
 
     @Test
-    public void roGet(){
+    public void roGet() {
         System.err.println(JSON.toJSONString(userRepository.findById(1L)));
     }
 
 
-
     @Test
-    public void findAll(){
+    public void findAll() {
         System.err.println(JSON.toJSONString(userRepository.findAll()));
     }
-
 
 
 }

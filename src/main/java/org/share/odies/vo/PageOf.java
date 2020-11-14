@@ -4,7 +4,7 @@ public class PageOf {
     private int page = 0;
     private int pageSize = 10;
 
-    private PageOf(int page, int pageSize){
+    private PageOf(int page, int pageSize) {
         this.page = page;
         this.pageSize = pageSize;
     }
@@ -13,8 +13,8 @@ public class PageOf {
     /********************************************************************************************************************
      *  APis
      ********************************************************************************************************************/
-    public static PageOf of(int page, int pageSize){
-        return  new PageOf(page,pageSize);
+    public static PageOf of(int page, int pageSize) {
+        return new PageOf(page, pageSize);
     }
 
     public int getPage() {

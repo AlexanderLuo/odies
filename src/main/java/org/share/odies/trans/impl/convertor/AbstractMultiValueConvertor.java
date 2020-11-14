@@ -10,29 +10,30 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractMultiValueConvertor<V> implements ValueConvertor<V> {
 
-	private ConvertorRegistry convertorRegistry;
-	protected Logger logger = LoggerFactory.getLogger(this.getClass());
+    private ConvertorRegistry convertorRegistry;
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	protected ConvertorRegistry getConvertorRegistry() {
-		return convertorRegistry;
-	}
-	public AbstractMultiValueConvertor(ConvertorRegistry convertorRegistry) {
-		this.convertorRegistry = convertorRegistry;
-	}
+    protected ConvertorRegistry getConvertorRegistry() {
+        return convertorRegistry;
+    }
 
-	protected DataItem[] resolveItems(String key, Object value){
-		return this.resolveItems(null, key, value);
-	}
+    public AbstractMultiValueConvertor(ConvertorRegistry convertorRegistry) {
+        this.convertorRegistry = convertorRegistry;
+    }
 
-	protected DataItem[] resolveItems(String prefix, String propKey, Object value) {
-		if(StringUtils.isNotBlank(prefix)){
-			propKey = prefix + Translator.SEPERATOR + propKey;
-		}
-		ValueConvertor<Object> convertor = getConvertorRegistry().findConvertor(value.getClass());
-		if(convertor==null){
-			logger.warn("prop[name={},type={}] convertor not found",propKey,value.getClass().getSimpleName());
-		}
-		return convertor.toRedisData(propKey, value);
-	}
+    protected DataItem[] resolveItems(String key, Object value) {
+        return this.resolveItems(null, key, value);
+    }
+
+    protected DataItem[] resolveItems(String prefix, String propKey, Object value) {
+        if (StringUtils.isNotBlank(prefix)) {
+            propKey = prefix + Translator.SEPERATOR + propKey;
+        }
+        ValueConvertor<Object> convertor = getConvertorRegistry().findConvertor(value.getClass());
+        if (convertor == null) {
+            logger.warn("prop[name={},type={}] convertor not found", propKey, value.getClass().getSimpleName());
+        }
+        return convertor.toRedisData(propKey, value);
+    }
 
 }

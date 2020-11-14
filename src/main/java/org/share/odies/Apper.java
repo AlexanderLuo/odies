@@ -17,7 +17,7 @@ import redis.clients.jedis.ShardedJedisPool;
 public class Apper implements CommandLineRunner {
 
     public static void main(String[] args) {
-        SpringApplication.run(Apper.class,args);
+        SpringApplication.run(Apper.class, args);
     }
 
     @Autowired

@@ -31,12 +31,11 @@ import java.util.*;
 import static com.google.common.collect.Lists.newArrayList;
 
 /**
- * @version V1.0, 2020-06-30
  * @author Alexander Lo
+ * @version V1.0, 2020-06-30
  * @code wrapper
  */
-public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID extends Serializable>  extends ShardedJedisRedis {
-
+public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID extends Serializable> extends ShardedJedisRedis {
 
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
@@ -53,15 +52,12 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
     private String roSortedSetKey = null;
 
 
-
     private Map<String, SortedSet> fieldName_Annotation_Map = null;
     private Map<SortedSet, SortedSetAssist<T, ID>> fieldInSortedSetMap = null;
 
 
     private Map<String, SortedSet> methodName_Annotation_Map = null;
     private Map<SortedSet, SortedSetAssist<T, ID>> methodInSortedSetMap = null;
-
-
 
 
     @SuppressWarnings("unchecked")
@@ -80,20 +76,18 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
         }
 
 
-
         ExpressionParser parser = new SpelExpressionParser();
 
         SortedSet roSortedSet = entityClass.getAnnotation(SortedSet.class);
 
-        if(roSortedSet != null){
+        if (roSortedSet != null) {
             roSortedSetKey = getKeyPrefix() + SEPARATOR + roSortedSet.prefix();
             if (StringUtils.isNotBlank(roSortedSet.score())) {
                 expression = parser.parseExpression(roSortedSet.score());
             }
-        }else {
-            roSortedSetKey =  getKeyPrefix() + SEPARATOR + DEFAULT_RO_ZSET_KEY;
+        } else {
+            roSortedSetKey = getKeyPrefix() + SEPARATOR + DEFAULT_RO_ZSET_KEY;
         }
-
 
 
         if (entityClass != null) {
@@ -171,26 +165,24 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
     }
 
 
-
     /**
      * @version V1.0, 2020-06-29
      * @author Alexander Lo
-     * @code  key  ----  Obj
+     * @code key  ----  Obj
      */
     public T findByKey(String key) {
         Map<byte[], byte[]> map = hgetAll(key);
 
         if (map == null || map.isEmpty()) {
             return null;
-        }
-        else {
+        } else {
             T ro = instance();
-            if(ro != null) {
+            if (ro != null) {
                 ro.fromMap(map);
                 return ro;
             }
 
-            logger.error(entityClass.getName() + "--key:" + key +"查询失败");
+            logger.error(entityClass.getName() + "--key:" + key + "查询失败");
             return null;
         }
     }
@@ -214,10 +206,10 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
                 if (map != null && !map.isEmpty()) {
                     T ro = instance();
 
-                    if(ro != null) {
+                    if (ro != null) {
                         ro.fromMap(map);
                         result.add(ro);
-                    }else {
+                    } else {
                         logger.error(entityClass.getName() + "查询失败");
                     }
 
@@ -229,16 +221,13 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
     }
 
 
-
-
-
     /**
      * @version V1.0, 2020-06-29
      * @author Alexander Lo
      * @code 批量删除
      */
     @SuppressWarnings("deprecation")
-    public void pipleDelete(List<String> keys){
+    public void pipleDelete(List<String> keys) {
         Pool<ShardedJedis> pool = getPool();
         ShardedJedis jedis = null;
         try {
@@ -248,20 +237,18 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
                 jedisPipeline.del(key);
             }
             jedisPipeline.syncAndReturnAll();
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("redis save iterator error.", e);
-        }
-        finally {
+        } finally {
             pool.returnResource(jedis);
         }
 
     }
 
 
-
     /********************************************************************************************************************
      *   ROM  CRUD  操作
-    ********************************************************************************************************************/
+     ********************************************************************************************************************/
 
 
     /**
@@ -291,9 +278,6 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
     }
 
 
-
-
-
     /**
      * @version V1.0, 2020-06-29
      * @author Alexander Lo
@@ -309,16 +293,14 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
                 this.save(ro, jedisPipeline);
             }
             jedisPipeline.syncAndReturnAll();
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("redis save iterator error.", e);
-        }
-        finally {
+        } finally {
             if (jedis != null) {
                 jedis.close();
             }
         }
     }
-
 
 
     /**
@@ -346,9 +328,6 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
         }
         pipeline.hmset(RedisUtil.toByteArray(getRoFullKey(ro.getId())), ro.toMap());
     }
-
-
-
 
 
     /**
@@ -379,18 +358,13 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
     }
 
 
-
-
-
-
-
-
     /********************************************************************************************************************
      *  Normal get/set
-    ********************************************************************************************************************/
+     ********************************************************************************************************************/
     public String getKeyPrefix() {
         return keyPrefix;
     }
+
     public String getRoFullKey(Serializable id) {
         return getKeyPrefix() + SEPARATOR + id;
     }
@@ -412,11 +386,9 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
     }
 
 
-
     public String getRoSortedSetKey() {
         return roSortedSetKey;
     }
-
 
 
     /**
@@ -444,7 +416,6 @@ public class ShardedJedisCurdCommonRedisDao<T extends IdRedisEntity<ID>, ID exte
         }
         return newArrayList();
     }
-
 
 
     private T instance() {

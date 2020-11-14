@@ -4,8 +4,8 @@ import java.lang.annotation.*;
 
 
 /**
- * @version V1.0, 2020-06-30
  * @author Alexander Lo
+ * @version V1.0, 2020-06-30
  * @code Marker 在实体上做zset
  */
 @Target(ElementType.TYPE)
@@ -13,8 +13,8 @@ import java.lang.annotation.*;
 @Inherited
 @Documented
 public @interface RoSortedSet {
-	
-	String prefix();
 
-	String score() default "";
+    String prefix();
+
+    String score() default "";
 }

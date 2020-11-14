@@ -30,13 +30,13 @@ public class DefaultBeanRegistry implements BeanRegistry {
 
     private ConvertorRegistry convertorRegistry;
 
-    private Map<Class,List<PropertyDescriptorExtends>> properties = Maps.newConcurrentMap();
+    private Map<Class, List<PropertyDescriptorExtends>> properties = Maps.newConcurrentMap();
 
     @Override
     public List<PropertyDescriptorExtends> findProperties(Class beanClazz) {
         List<PropertyDescriptorExtends> result = properties.get(beanClazz);
-        if(result==null){
-            synchronized (beanClazz){
+        if (result == null) {
+            synchronized (beanClazz) {
                 register(beanClazz);
                 result = properties.get(beanClazz);
             }
@@ -48,7 +48,7 @@ public class DefaultBeanRegistry implements BeanRegistry {
     public <RO> RO newBeanInstance(Class<RO> beanClazz) {
         try {
             return beanClazz.newInstance();
-        } catch (InstantiationException|IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             ReflectionUtils.handleReflectionException(e);
             //make compiler happy
             return null;
@@ -63,10 +63,10 @@ public class DefaultBeanRegistry implements BeanRegistry {
             BeanInfo bi = Introspector.getBeanInfo(beanClazz, Object.class);
             PropertyDescriptor[] pds = bi.getPropertyDescriptors();
             for (PropertyDescriptor pd : pds) {
-                if(getConvertorRegistry().isSupportedPropertyType(pd.getPropertyType())){
-                    result.add(new PropertyDescriptorExtends(pd,beanClazz));
-                }else{
-                    logger.warn("ro[clazz={}] prop[name={},type={}] is unsupported", beanClazz,pd.getName(),pd.getPropertyType());
+                if (getConvertorRegistry().isSupportedPropertyType(pd.getPropertyType())) {
+                    result.add(new PropertyDescriptorExtends(pd, beanClazz));
+                } else {
+                    logger.warn("ro[clazz={}] prop[name={},type={}] is unsupported", beanClazz, pd.getName(), pd.getPropertyType());
                 }
             }
         } catch (IntrospectionException e) {

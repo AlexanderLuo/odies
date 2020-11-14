@@ -8,10 +8,11 @@ package org.share.odies.exceptions;
 public class OdiesUsageException extends RuntimeException {
 
 
-    public  OdiesUsageException(){}
+    public OdiesUsageException() {
+    }
 
 
-    public  OdiesUsageException(String msg){
+    public OdiesUsageException(String msg) {
         super(msg);
     }
 

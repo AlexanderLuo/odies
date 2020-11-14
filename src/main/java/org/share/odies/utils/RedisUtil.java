@@ -15,18 +15,18 @@ import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 
 /**
- * @version V1.0, 2020-06-30
  * @author Alexander Lo
+ * @version V1.0, 2020-06-30
  * @code to byte
  */
 public final class RedisUtil {
 
     private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
-	public static byte[] toByteArray(Serializable id) {
-		return id.toString().getBytes();
-	}
-    
+    public static byte[] toByteArray(Serializable id) {
+        return id.toString().getBytes();
+    }
+
     public static byte[] currentTs() {
         return toByteArray(System.currentTimeMillis());
     }
@@ -88,7 +88,7 @@ public final class RedisUtil {
         }
         return result;
     }
-    
+
     public static byte[][] ListBytetoByteArray(List<byte[]> list) {
         byte[][] result = new byte[list.size()][];
         for (int i = 0; i < list.size(); i++) {
@@ -263,15 +263,16 @@ public final class RedisUtil {
         }
         return idList;
     }
+
     public static List<String> stringSetToStringList(Set<String> stringSet) {
-    	if (isEmpty(stringSet)) {
-    		return new ArrayList<>();
-    	}
-    	List<String> idList = new ArrayList<String>(stringSet.size());
-    	for (String s : stringSet) {
-    		idList.add(String.valueOf(s));
-    	}
-    	return idList;
+        if (isEmpty(stringSet)) {
+            return new ArrayList<>();
+        }
+        List<String> idList = new ArrayList<String>(stringSet.size());
+        for (String s : stringSet) {
+            idList.add(String.valueOf(s));
+        }
+        return idList;
     }
 
 }

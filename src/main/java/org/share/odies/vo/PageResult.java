@@ -24,7 +24,9 @@ public class PageResult<E> implements Serializable {
     private int totalPage;
 
 
-    public PageResult() { this.result = new ArrayList<>();}
+    public PageResult() {
+        this.result = new ArrayList<>();
+    }
 
 
     public PageResult(int page, int size, int total, List<E> result) {

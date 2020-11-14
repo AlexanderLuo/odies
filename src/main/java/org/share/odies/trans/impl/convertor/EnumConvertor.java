@@ -7,28 +7,28 @@ import org.share.odies.trans.ValueConvertor;
 
 public class EnumConvertor<E extends Enum<E>> implements ValueConvertor<E> {
 
-	public static final ConvertorMatcher MARCHER = new ConvertorMatcher(){
-		@Override
-		public boolean isMatch(Class clazz) {
-			return Enum.class.isAssignableFrom(clazz);
-		}
-	};
+    public static final ConvertorMatcher MARCHER = new ConvertorMatcher() {
+        @Override
+        public boolean isMatch(Class clazz) {
+            return Enum.class.isAssignableFrom(clazz);
+        }
+    };
 
-	@Override
-	public DataItem[] toRedisData(String key, Enum val) {
-		if(val==null)
-			return new DataItem[0];
-		return new DataItem[]{new DataItem(key,val.name().getBytes())};
-	}
+    @Override
+    public DataItem[] toRedisData(String key, Enum val) {
+        if (val == null)
+            return new DataItem[0];
+        return new DataItem[]{new DataItem(key, val.name().getBytes())};
+    }
 
-	@Override
-	public E toValue(Class<E> clazz, String prefix, DataItem[] redisData) {
-		if(redisData==null || redisData.length==0){
-			return null;
-		}
-		String enumName = new String(redisData[0].getData());
-		return EnumUtils.getEnum(clazz,enumName);
-	}
+    @Override
+    public E toValue(Class<E> clazz, String prefix, DataItem[] redisData) {
+        if (redisData == null || redisData.length == 0) {
+            return null;
+        }
+        String enumName = new String(redisData[0].getData());
+        return EnumUtils.getEnum(clazz, enumName);
+    }
 //	enums TEST{
 //		A,
 //		B

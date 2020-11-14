@@ -9,23 +9,33 @@ import org.springframework.data.repository.CrudRepository;
 import java.io.Serializable;
 import java.util.List;
 
-public interface JedisCurdRepository<T,ID>  {
+public interface JedisCurdRepository<T, ID> {
 
     void save(T ro);
+
     T findById(ID id);
+
     List<T> findByIds(Iterable<ID> ids);
 
     boolean exists(ID id);
-    void delete(ID id);
-    long count();
-    List<T> findAll();
-    PageResult<T> findAll(PageOf pageOf);
-    PageResult<T> findAll(PageOf pageOf, SortBy sortBy);
-    void deleteAll();
-    void saveAll(Iterable<T> ros);
-    List<T> findAllById(Iterable<ID> ids);
-    void deleteAllById(Iterable<ID> ids);
 
+    void delete(ID id);
+
+    long count();
+
+    List<T> findAll();
+
+    PageResult<T> findAll(PageOf pageOf);
+
+    PageResult<T> findAll(PageOf pageOf, SortBy sortBy);
+
+    void deleteAll();
+
+    void saveAll(Iterable<T> ros);
+
+    List<T> findAllById(Iterable<ID> ids);
+
+    void deleteAllById(Iterable<ID> ids);
 
 
 }

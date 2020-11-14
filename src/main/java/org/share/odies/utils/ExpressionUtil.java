@@ -9,8 +9,8 @@ import java.util.Date;
 
 
 /**
- * @version V1.0, 2020-06-30
  * @author Alexander Lo
+ * @version V1.0, 2020-06-30
  * @code
  */
 public class ExpressionUtil {
@@ -25,11 +25,11 @@ public class ExpressionUtil {
         } else {
             Object obj = expression.getValue(itemContext);
             if (obj instanceof Date) {
-                return ((Date)obj).getTime();
+                return ((Date) obj).getTime();
             } else if (obj instanceof LocalDateTime) {
-                return ((LocalDateTime)obj).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                return ((LocalDateTime) obj).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
             } else if (obj instanceof Number) {
-                return ((Number)obj).longValue();
+                return ((Number) obj).longValue();
             } else {
                 throw new IllegalArgumentException();
             }

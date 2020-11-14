@@ -3,8 +3,10 @@ package org.share.odies.config;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +30,8 @@ import redis.clients.jedis.ShardedJedisPool;
 
 
 /**
- * @version V1.0, 2020-06-30
  * @author Alexander Lo
+ * @version V1.0, 2020-06-30
  * @code 接入spring
  */
 @ConditionalOnProperty({"spring.redis.host"})
@@ -112,8 +114,7 @@ public class JedisConfig {
         config.setMinEvictableIdleTimeMillis(TimeUnit.MINUTES.toMillis(10L));
 
 
-
-        JedisShardInfo info = new JedisShardInfo(p.getHost(), p.getPort(), (int)p.getTimeout().getSeconds() * 1000);
+        JedisShardInfo info = new JedisShardInfo(p.getHost(), p.getPort(), (int) p.getTimeout().getSeconds() * 1000);
 
         info.setPassword(Strings.emptyToNull(p.getPassword()));
         ShardedJedisPool pool = new ShardedJedisPool(config, Lists.newArrayList(new JedisShardInfo[]{info}));

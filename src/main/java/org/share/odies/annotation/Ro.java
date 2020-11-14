@@ -15,12 +15,14 @@ public @interface Ro {
 
     /**
      * prefix key
+     *
      * @return
      */
     String prefix();
 
     /**
      * expire time
+     *
      * @return
      */
     int expireSeconds() default 0;

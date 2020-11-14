@@ -4,8 +4,8 @@ import java.lang.annotation.*;
 
 
 /**
- * @version V1.0, 2020-06-30
  * @author Alexander Lo
+ * @version V1.0, 2020-06-30
  * @code
  */
 @Target(ElementType.FIELD)
@@ -13,10 +13,10 @@ import java.lang.annotation.*;
 @Inherited
 @Documented
 public @interface FieldSortedSet {
-	
-	String prefix() default "";
-	
-	String key();
 
-	String score() default "";
+    String prefix() default "";
+
+    String key();
+
+    String score() default "";
 }

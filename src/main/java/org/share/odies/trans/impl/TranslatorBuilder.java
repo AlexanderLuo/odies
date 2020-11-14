@@ -24,54 +24,55 @@ public class TranslatorBuilder {
 
     private static Translator defaultTranslator;
 
-    public static TranslatorBuilder createBuilder(){
+    public static TranslatorBuilder createBuilder() {
         return new TranslatorBuilder().addDefaultConvertor();
     }
 
     /**
      * 获取默认 translator 单例
+     *
      * @return
      */
-    public synchronized static Translator getDefaultTranslatorSingleton(){
-        if(defaultTranslator==null){
+    public synchronized static Translator getDefaultTranslatorSingleton() {
+        if (defaultTranslator == null) {
             defaultTranslator = TranslatorBuilder.createBuilder().build();
         }
         return defaultTranslator;
     }
 
 
-    public TranslatorBuilder addValueConvertor(Class clazz, ValueConvertor valueConvertor){
-        convertorBuckets.add(new Bucket(clazz,valueConvertor));
+    public TranslatorBuilder addValueConvertor(Class clazz, ValueConvertor valueConvertor) {
+        convertorBuckets.add(new Bucket(clazz, valueConvertor));
         return this;
     }
 
-    public TranslatorBuilder addValueConvertor(ConvertorMatcher convertorMatcher, ValueConvertor valueConvertor){
-        convertorBuckets.add(new Bucket(convertorMatcher,valueConvertor));
+    public TranslatorBuilder addValueConvertor(ConvertorMatcher convertorMatcher, ValueConvertor valueConvertor) {
+        convertorBuckets.add(new Bucket(convertorMatcher, valueConvertor));
         return this;
     }
 
-    public <T extends Translator> Translator build(){
+    public <T extends Translator> Translator build() {
         DefaultTranslator dt = new DefaultTranslator();
-        if(convertorRegistry==null){
+        if (convertorRegistry == null) {
             convertorRegistry = new DefaultConvertorRegistry();
         }
 
-        if(beanRegistry==null){
+        if (beanRegistry == null) {
             DefaultBeanRegistry beanRegistry0 = new DefaultBeanRegistry();
             beanRegistry0.setConvertorRegistry(convertorRegistry);
             beanRegistry = beanRegistry0;
         }
-        if(dataTransformer==null){
+        if (dataTransformer == null) {
             dataTransformer = new DefaultDataTransformer();
         }
-        this.addValueConvertor(RedisObject.class, new BeanConvertor(this.convertorRegistry,this.beanRegistry));
+        this.addValueConvertor(RedisObject.class, new BeanConvertor(this.convertorRegistry, this.beanRegistry));
 
 
         for (Bucket convertorBucket : convertorBuckets) {
-            if(convertorBucket.clazz != null){
-                convertorRegistry.registerConvertor(convertorBucket.clazz,convertorBucket.valueConvertor);
-            }else{
-                convertorRegistry.registerConvertor(convertorBucket.convertorMatcher,convertorBucket.valueConvertor);
+            if (convertorBucket.clazz != null) {
+                convertorRegistry.registerConvertor(convertorBucket.clazz, convertorBucket.valueConvertor);
+            } else {
+                convertorRegistry.registerConvertor(convertorBucket.convertorMatcher, convertorBucket.valueConvertor);
             }
         }
 
@@ -81,32 +82,32 @@ public class TranslatorBuilder {
         return dt;
     }
 
-    private TranslatorBuilder addDefaultConvertor(){
+    private TranslatorBuilder addDefaultConvertor() {
         this
-                .addValueConvertor(Boolean.class,       BasicConvertor.withBoolean  )
-                .addValueConvertor(boolean.class,       BasicConvertor.withBoolean  )
-                .addValueConvertor(Byte.class,          BasicConvertor.withByte     )
-                .addValueConvertor(byte.class,          BasicConvertor.withByte     )
-                .addValueConvertor(Short.class,         BasicConvertor.withShort    )
-                .addValueConvertor(short.class,         BasicConvertor.withShort    )
-                .addValueConvertor(Integer.class,       BasicConvertor.withInteger  )
-                .addValueConvertor(int.class,           BasicConvertor.withInteger  )
-                .addValueConvertor(Long.class,          BasicConvertor.withLong     )
-                .addValueConvertor(long.class,          BasicConvertor.withLong     )
-                .addValueConvertor(Character.class,     BasicConvertor.withCharacter)
-                .addValueConvertor(char.class,          BasicConvertor.withCharacter)
-                .addValueConvertor(Double.class,        BasicConvertor.withDouble   )
-                .addValueConvertor(double.class,        BasicConvertor.withDouble   )
-                .addValueConvertor(Float.class,         BasicConvertor.withFloat    )
-                .addValueConvertor(float.class,         BasicConvertor.withFloat    )
-                .addValueConvertor(BigDecimal.class,    BasicConvertor.withBigDecimal)
-                .addValueConvertor(String.class,        BasicConvertor.withString   )
-                .addValueConvertor(Date.class,          BasicConvertor.withDate     )
-                .addValueConvertor(java.sql.Date.class, BasicConvertor.withSqlDate  )
-                .addValueConvertor(Timestamp.class,     BasicConvertor.withTimestamp)
-                .addValueConvertor(Time.class,          BasicConvertor.withSqlTime  )
+                .addValueConvertor(Boolean.class, BasicConvertor.withBoolean)
+                .addValueConvertor(boolean.class, BasicConvertor.withBoolean)
+                .addValueConvertor(Byte.class, BasicConvertor.withByte)
+                .addValueConvertor(byte.class, BasicConvertor.withByte)
+                .addValueConvertor(Short.class, BasicConvertor.withShort)
+                .addValueConvertor(short.class, BasicConvertor.withShort)
+                .addValueConvertor(Integer.class, BasicConvertor.withInteger)
+                .addValueConvertor(int.class, BasicConvertor.withInteger)
+                .addValueConvertor(Long.class, BasicConvertor.withLong)
+                .addValueConvertor(long.class, BasicConvertor.withLong)
+                .addValueConvertor(Character.class, BasicConvertor.withCharacter)
+                .addValueConvertor(char.class, BasicConvertor.withCharacter)
+                .addValueConvertor(Double.class, BasicConvertor.withDouble)
+                .addValueConvertor(double.class, BasicConvertor.withDouble)
+                .addValueConvertor(Float.class, BasicConvertor.withFloat)
+                .addValueConvertor(float.class, BasicConvertor.withFloat)
+                .addValueConvertor(BigDecimal.class, BasicConvertor.withBigDecimal)
+                .addValueConvertor(String.class, BasicConvertor.withString)
+                .addValueConvertor(Date.class, BasicConvertor.withDate)
+                .addValueConvertor(java.sql.Date.class, BasicConvertor.withSqlDate)
+                .addValueConvertor(Timestamp.class, BasicConvertor.withTimestamp)
+                .addValueConvertor(Time.class, BasicConvertor.withSqlTime)
                 .addValueConvertor(EnumConvertor.MARCHER, new EnumConvertor())
-                .addValueConvertor(BeanConvertor.MATCHER, new BeanConvertor(convertorRegistry,beanRegistry))
+                .addValueConvertor(BeanConvertor.MATCHER, new BeanConvertor(convertorRegistry, beanRegistry))
 
 
         ;
@@ -114,7 +115,7 @@ public class TranslatorBuilder {
         return this;
     }
 
-    private static class Bucket{
+    private static class Bucket {
         Class clazz;
         ValueConvertor valueConvertor;
         ConvertorMatcher convertorMatcher;

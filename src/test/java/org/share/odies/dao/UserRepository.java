@@ -10,8 +10,7 @@ import org.springframework.stereotype.Repository;
  * Description:
  */
 @Repository
-public class UserRepository extends DefaultJedisRepository<User,Long> {
-
+public class UserRepository extends DefaultJedisRepository<User, Long> {
 
 
 }
